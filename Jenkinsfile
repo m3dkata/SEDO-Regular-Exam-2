@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'mcr.microsoft.com/dotnet/sdk:8.0'
+            args '-u root:root'
+        }
+    }
     
     environment {
         DOTNET_CLI_TELEMETRY_OPTOUT = 'true'
@@ -7,7 +12,6 @@ pipeline {
     }
     
     triggers {
-        // Trigger on push to main branch
         githubPush()
     }
     
@@ -36,13 +40,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                sh 'dotnet test --no-build --configuration Release --verbosity normal --logger trx --results-directory TestResults'
-            }
-            post {
-                always {
-                    // Publish test results
-                    publishTestResults testResultsPattern: 'TestResults/*.trx'
-                }
+                sh 'dotnet test --no-build --configuration Release --verbosity normal'
             }
         }
     }
